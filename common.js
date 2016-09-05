@@ -219,7 +219,7 @@ $(function() {
 		loadGameSizeUI();
 
 		var gameMode = getValueAndSetPullDown('findme', 'ava', "#game-find-me");
-		gameSize = parseInt(getValueAndSetPullDown('size', 21, "#game-size"));
+		gameSize = parseInt(getValueAndSetPullDown('size', gameSize, "#game-size"));
 
 		setWinner(gameMode);
 
