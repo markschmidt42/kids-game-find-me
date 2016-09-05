@@ -26,7 +26,7 @@ $(function() {
 	var $score = $("#score");
 	var $allCards;
 
-	var $warmerColder = $("#warmerColder");
+	var $warmerColder = $("#warmer-colder");
 
 	var points = startingPoints;
 
@@ -106,7 +106,7 @@ $(function() {
 
 
 			if (prevGuess == 0) {
-				$warmerColder.text("???");
+				$warmerColder.text("");
 			} else if (Math.abs(cardNum-randomWinner) < Math.abs(prevGuess-randomWinner) ) {
 				$warmerColder.text("warmer");
 			} else {
