@@ -17,8 +17,8 @@ var kids = {
 };
 
 $(function() {
-	var gameSize = 21;
-	var startingPoints = 1000;
+	var gameSize = 80;
+	var startingPoints = gameSize;
 
 	var randomWinner = 0;
 
@@ -28,12 +28,15 @@ $(function() {
 
 	var $warmerColder = $("#warmer-colder");
 
+	var clicks = 0;
 	var points = startingPoints;
 
 	var winner = kids['ava'];
 	var nopes = [kids['mya'],kids['addison']];
 
 	var prevGuess = 0; 
+
+	var tileSize = 100;
 
 	var setWinner = function(winnerName) {
 		// I know there is a better way
@@ -51,8 +54,8 @@ $(function() {
 
 	var cardCover = [
 		 '<div class="card" data-item="[ITEM]"><img src="images/turtle.jpg" />'
-		,'<div class="card" data-item="[ITEM]"><img src="images/grass.png" />'
-		,'<div class="card" data-item="[ITEM]"><img src="images/rock.png" />'
+//		'<div class="card" data-item="[ITEM]"><img src="images/grass.png" />'
+//		,'<div class="card" data-item="[ITEM]"><img src="images/rock.png" />'
 	] 
 
 	var playSound = function(sound) {
@@ -73,6 +76,10 @@ $(function() {
 		return array[getRandom(0, array.length-1)]
 	}
 
+	var setTileSize = function($card, tileSize) {
+		$card.css({"height": tileSize, "width": tileSize});
+	}
+
 	var layoutBoard = function(boardSize) {
 		for (var x = 0; x < boardSize; x++) {
 			var cardNum = x+1;
@@ -81,11 +88,14 @@ $(function() {
 			card = card.replace("[ITEM]", cardNum);
 			$card = $(card);
 
+			// set height/width;
+			setTileSize($card, tileSize);
+
 			$card.append('<label>'+ cardNum +'</label>')
 
 			$game.append($card);
 			
-			$card.fadeIn(x * 100);
+			$card.fadeIn(x * (1000/gameSize));
 		}
 	}
 
@@ -95,8 +105,12 @@ $(function() {
 		var cardPos = $card.offset();
 		console.log(cardPos);
 
+		var $underCardImg = $('<img src="images/'+ cardToPutUnder.img +'" />');
+		setTileSize($underCardImg, tileSize);
+
+
 		$cardUnder.css({"top": cardPos.top-50, "left":cardPos.left-10});
-		$cardUnder.append('<img src="images/'+ cardToPutUnder.img +'" />');
+		$cardUnder.append($underCardImg);
 		$card.after($cardUnder);
 	}
 
@@ -152,14 +166,20 @@ $(function() {
 				points = parseInt(points - (startingPoints/gameSize));
 			}
 
+			clicks++;
 
 			prevGuess = cardNum;
 
-			$score.text(points);
+			
+			updateScore();
 
-			$card.animate({"top": -90}, 500, afterSlideUp);
+			$card.animate({"top": (tileSize * -0.90)}, 500, afterSlideUp);
 
 		});
+	}
+
+	var updateScore = function() {
+		$score.text("Clicks: "+ clicks);
 	}
 
 	var initEvents = function() {
@@ -182,10 +202,14 @@ $(function() {
 		$("#game-find-me").val(gameMode);
 		setWinner(gameMode);
 
+		tileSize = GetTileSize($(window).width(), $(window).height()-80, gameSize);
+		//tileSize = tileSize - 20;
+
 		layoutBoard(gameSize);
 
 		$allCards = $game.find(".card");
 
+		updateScore();
 		initEvents();
 	}
 
@@ -202,4 +226,37 @@ function getParameterByName(name, url) {
     if (!results) return '';
     if (!results[2]) return '';
     return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+
+function GetTileSize(unscaledWidth, unscaledHeight, numberOfSlides)
+{
+	//total number of tiles
+	var tile_count = numberOfSlides;
+	//height of rectangle
+	var b  = unscaledHeight;
+	//width of rectanlge
+	var a  = unscaledWidth;
+
+	//divide the area but the number of tiles to get the max area a tile could cover
+	//this optimal size for a tile will more often than not make the tiles overlap, but
+	//a tile can never be bigger than this size
+	var maxSize = Math.sqrt((b * a) / tile_count);
+	//find the number of whole tiles that can fit into the height
+	var numberOfPossibleWholeTilesH  = Math.floor(b / maxSize);
+	//find the number of whole tiles that can fit into the width
+	var numberOfPossibleWholeTilesW  = Math.floor(a / maxSize);
+	//works out how many whole tiles this configuration can hold
+	var total  = numberOfPossibleWholeTilesH * numberOfPossibleWholeTilesW;
+
+	//if the number of number of whole tiles that the max size tile ends up with is less than the require number of 
+	//tiles, make the maxSize smaller and recaluate
+	while(total < tile_count){
+		maxSize--;
+		numberOfPossibleWholeTilesH = Math.floor(b / maxSize);
+		numberOfPossibleWholeTilesW = Math.floor(a / maxSize);
+		total = numberOfPossibleWholeTilesH * numberOfPossibleWholeTilesW;
+	}
+
+	return maxSize;    
 }
