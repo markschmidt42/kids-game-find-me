@@ -17,7 +17,7 @@ var kids = {
 };
 
 $(function() {
-	var gameSize = 80;
+	var gameSize = 21;
 	var startingPoints = gameSize;
 
 	var randomWinner = 0;
@@ -54,8 +54,8 @@ $(function() {
 
 	var cardCover = [
 		 '<div class="card" data-item="[ITEM]"><img src="images/turtle.jpg" />'
-//		'<div class="card" data-item="[ITEM]"><img src="images/grass.png" />'
-//		,'<div class="card" data-item="[ITEM]"><img src="images/rock.png" />'
+		,'<div class="card" data-item="[ITEM]"><img src="images/grass.png" />'
+		,'<div class="card" data-item="[ITEM]"><img src="images/rock.png" />'
 	] 
 
 	var playSound = function(sound) {
@@ -182,6 +182,13 @@ $(function() {
 		$score.text("Clicks: "+ clicks);
 	}
 
+	var resetGameConfig = function() {
+		location.href = location.origin + location.pathname
+			+ '?findme='+ $("#game-find-me").val()
+			+ '&size='+ $("#game-size").val()
+			;
+	}
+
 	var initEvents = function() {
 		initCardClickEvents();
 
@@ -189,18 +196,34 @@ $(function() {
 			window.location.reload();
 		});
 
-		$("#game-find-me").on('change', function() {
-			location.href = location.origin + location.pathname + '?findme='+ $(this).val();
+		$("#game-find-me,#game-size").on('change', function() {
+			resetGameConfig();
 		})
 
 	}		
 
+	var loadGameSizeUI = function() {
+		for (var x = 1; x <= 500; x++) {
+			$("#game-size").append('<option value="'+ x +'">'+ x +'</option>');
+		}
+	}
+
+	var getValueAndSetPullDown = function(queryStringName, defaultValue, selectIdSelector) {
+		var val = getParameterByName(queryStringName);
+		if (val == '') val = defaultValue;
+		$(selectIdSelector).val(val);
+		return val;
+	}
+
 	var initialize = function() {
-		var gameMode = getParameterByName('findme');
-		randomWinner = getRandom(1, gameSize);
-		if (gameMode == '') gameMode = 'ava';
-		$("#game-find-me").val(gameMode);
+		loadGameSizeUI();
+
+		var gameMode = getValueAndSetPullDown('findme', 'ava', "#game-find-me");
+		gameSize = parseInt(getValueAndSetPullDown('size', 21, "#game-size"));
+
 		setWinner(gameMode);
+
+		randomWinner = getRandom(1, gameSize);
 
 		tileSize = GetTileSize($(window).width(), $(window).height()-80, gameSize);
 		//tileSize = tileSize - 20;
