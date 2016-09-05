@@ -50,9 +50,9 @@ $(function() {
 	}
 
 	var cardCover = [
-		 '<img class="card" data-item="[ITEM]" src="images/turtle.jpg" />'
-		,'<img class="card" data-item="[ITEM]" src="images/grass.png" />'
-		,'<img class="card" data-item="[ITEM]" src="images/rock.png" />'
+		 '<div class="card" data-item="[ITEM]"><img src="images/turtle.jpg" />'
+		,'<div class="card" data-item="[ITEM]"><img src="images/grass.png" />'
+		,'<div class="card" data-item="[ITEM]"><img src="images/rock.png" />'
 	] 
 
 	var playSound = function(sound) {
@@ -75,10 +75,13 @@ $(function() {
 
 	var layoutBoard = function(boardSize) {
 		for (var x = 0; x < boardSize; x++) {
+			var cardNum = x+1;
 			var card = getRandomItemFromArray(cardCover);
 
-			card = card.replace("[ITEM]", x+1);
+			card = card.replace("[ITEM]", cardNum);
 			$card = $(card);
+
+			$card.append('<label>'+ cardNum +'</label>')
 
 			$game.append($card);
 			
@@ -87,8 +90,13 @@ $(function() {
 	}
 
 	var putCardUnderThisCard = function($card, cardToPutUnder) {
-		$cardUnder = $('<img class="under card" src="images/'+ cardToPutUnder.img +'" />');
-		$cardUnder.css({"position": "absolute", "top": $card.offset().top, "left":$card.offset().left});
+		$cardUnder = $('<div class="under card"></div>');
+
+		var cardPos = $card.offset();
+		console.log(cardPos);
+
+		$cardUnder.css({"top": cardPos.top-50, "left":cardPos.left-10});
+		$cardUnder.append('<img src="images/'+ cardToPutUnder.img +'" />');
 		$card.after($cardUnder);
 	}
 
@@ -105,15 +113,11 @@ $(function() {
 			};
 
 
-			if (prevGuess == 0) {
-				$warmerColder.text("");
-			} else if (Math.abs(cardNum-randomWinner) < Math.abs(prevGuess-randomWinner) ) {
-				$warmerColder.text("warmer");
+			if (randomWinner > cardNum) {
+				$warmerColder.text("^^^ HIGHER ^^^");
 			} else {
-				$warmerColder.text("colder");
+				$warmerColder.text("vvv LOWER vvv");
 			}
-
-			//$warmerColder.text($warmerColder.text() +" curr:"+ Math.abs(cardNum-randomWinner) +" <? prev:"+ Math.abs(prevGuess-randomWinner));
 
 			// you found it
 			if (cardNum == randomWinner) {
