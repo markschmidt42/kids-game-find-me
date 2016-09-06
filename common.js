@@ -1,20 +1,23 @@
-var kids = {
-	'ava': {
+var kids = [
+	{
+		name: 'Ava',
 		img: "ava.png",
 		winSound: "ava-winner.mp3",
-		loseSound: "ava-nope.mp3"
+		nopeSound: "ava-nope.mp3"
 	},
-	'mya': {
+	{
+		name: 'Mya',
 		img: "mya.png",
 		winSound: "mya-winner.mp3",
-		loseSound: "mya-nope.mp3"
+		nopeSound: "mya-nope.mp3"
 	},
-	'addison': {
+	{
+		name: 'Addison',
 		img: "addison.png",
 		winSound: "addison-winner.mp3",
-		loseSound: "addison-nope.mp3"
+		nopeSound: "addison-nope.mp3"
 	}
-};
+];
 
 $(function() {
 	var gameSize = 21;
@@ -31,25 +34,19 @@ $(function() {
 	var clicks = 0;
 	var points = startingPoints;
 
-	var winner = kids['ava'];
-	var nopes = [kids['mya'],kids['addison']];
+	var winner = {};
+	var nopes = [];
 
 	var prevGuess = 0; 
 
 	var tileSize = 100;
 
 	var setWinner = function(winnerName) {
-		// I know there is a better way
-		if (winnerName == 'ava') {
-			winner = kids['ava'];
-			nopes = [kids['mya'],kids['addison']];
-		} else if (winnerName == 'mya') {
-			winner = kids['mya'];
-			nopes = [kids['ava'],kids['addison']];
-		} else if (winnerName == 'addison') {
-			winner = kids['addison'];
-			nopes = [kids['mya'],kids['ava']];
-		} 
+		// expect 1 object returned
+		winner = kids.filter(function(kid) { return kid.name.toLowerCase() == winnerName })[0];
+
+		// expect array of objects returned
+		nopes = kids.filter(function(kid) { return kid.name.toLowerCase() != winnerName });
 	}
 
 	var cardCover = [
@@ -108,8 +105,7 @@ $(function() {
 		var $underCardImg = $('<img src="images/'+ cardToPutUnder.img +'" />');
 		setTileSize($underCardImg, tileSize);
 
-
-		$cardUnder.css({"top": cardPos.top-50, "left":cardPos.left-10});
+		$cardUnder.css({"top": cardPos.top, "left":cardPos.left});
 		$cardUnder.append($underCardImg);
 		$card.after($cardUnder);
 	}
@@ -136,7 +132,7 @@ $(function() {
 			// you found it
 			if (cardNum == randomWinner) {
 
-				$warmerColder.text("FOUND IT");
+				$warmerColder.text("FOUND ME");
 
 				$game.find(".card").unbind();
 
@@ -160,7 +156,7 @@ $(function() {
 				putCardUnderThisCard($card, thisNope);
 
 				setTimeout(function() { 
-					playSound(thisNope.loseSound);
+					playSound(thisNope.nopeSound);
 				}, 500);
 
 				points = parseInt(points - (startingPoints/gameSize));
@@ -202,7 +198,11 @@ $(function() {
 
 	}		
 
-	var loadGameSizeUI = function() {
+	var loadPullDowns = function() {
+		kids.forEach(function(kid) {
+			$("#game-find-me").append('<option value="'+ kid.name.toLowerCase() +'">'+ kid.name +'</option>');
+		});
+
 		for (var x = 1; x <= 500; x++) {
 			$("#game-size").append('<option value="'+ x +'">'+ x +'</option>');
 		}
@@ -216,16 +216,16 @@ $(function() {
 	}
 
 	var initialize = function() {
-		loadGameSizeUI();
+		loadPullDowns();
 
-		var gameMode = getValueAndSetPullDown('findme', 'ava', "#game-find-me");
+		var gameMode = getValueAndSetPullDown('findme', 'ava', "#game-find-me").toLowerCase();
 		gameSize = parseInt(getValueAndSetPullDown('size', gameSize, "#game-size"));
 
 		setWinner(gameMode);
 
 		randomWinner = getRandom(1, gameSize);
-
-		tileSize = GetTileSize($(window).width(), $(window).height()-80, gameSize);
+		// - 15 for scroll bars
+		tileSize = GetTileSize($(window).width()-15, $(window).height()-$("#game").position().top-20, gameSize);
 		//tileSize = tileSize - 20;
 
 		layoutBoard(gameSize);
